@@ -22,6 +22,8 @@ phases:
       - mv config.buildinfo .config
       - make defconfig
       - 'echo "=== Starting build ==="'
+      - 'make tools/{clean, compile}'
+      - 'make tools/libressl/compile'
       - 'make -j1 V=sc download world'
       - 'echo "commit=${CODEBUILD_RESOLVED_SOURCE_VERSION}" > build-info.txt'
       - 'echo "openwrt_ref=${OPENWRT_REF}" >> build-info.txt'

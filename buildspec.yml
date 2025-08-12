@@ -15,7 +15,6 @@ phases:
       - './scripts/feeds install -a'
   build:
     commands:
-      - 'set -euo pipefail'
       - 'cd openwrt'
       - 'echo "=== Generating .config for TARGET=${TARGET} SUBTARGET=${SUBTARGET} PROFILE=${PROFILE} ==="'
       - 'rm -f .config'

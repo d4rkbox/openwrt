@@ -20,7 +20,6 @@ phases:
       - mv config.buildinfo .config
       - cat .config
       - 'echo "=== Starting build ==="'
-      - 'make defconfig download clean world'
       - 'make -j$(nproc) BUILD_LOG=1 V=s'
       - 'echo "commit=${CODEBUILD_RESOLVED_SOURCE_VERSION}" > build-info.txt'
       - 'echo "openwrt_ref=${OPENWRT_REF}" >> build-info.txt'

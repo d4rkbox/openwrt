@@ -16,11 +16,9 @@ phases:
   build:
     commands:
       - 'echo "=== Generating .config for TARGET=${TARGET} SUBTARGET=${SUBTARGET} PROFILE=${PROFILE} ==="'
-      - 'rm -f .config'
-      - 'make defconfig'
-      - printf '%s\n' "CONFIG_DEVEL=y" "CONFIG_BPF_TOOLCHAIN_HOST=y" "CONFIG_TARGET_${TARGET}=y" "CONFIG_TARGET_${TARGET}_${SUBTARGET}=y" "CONFIG_TARGET_${TARGET}_${SUBTARGET}_DEVICE_${PROFILE}=y" > .config
-      - 'make defconfig'
+      - 'wget https://downloads.openwrt.org/releases/24.10.2/targets/${TARGET}/${SUBTARGET}/config.buildinfo -o .config'
       - 'echo "=== Starting build ==="'
+      - 'make defconfig download clean world'
       - 'make -j$(nproc) BUILD_LOG=1 V=s'
       - 'echo "commit=${CODEBUILD_RESOLVED_SOURCE_VERSION}" > build-info.txt'
       - 'echo "openwrt_ref=${OPENWRT_REF}" >> build-info.txt'

@@ -18,6 +18,7 @@ phases:
       - echo "=== Generating .config for TARGET=${TARGET} SUBTARGET=${SUBTARGET} PROFILE=${PROFILE} ==="
       - wget https://downloads.openwrt.org/releases/24.10.2/targets/${TARGET}/${SUBTARGET}/config.buildinfo -o .config
       - mv config.buildinfo .config
+      - make defconfig
       - 'echo "=== Starting build ==="'
       - 'make -j1 download world'
       - 'echo "commit=${CODEBUILD_RESOLVED_SOURCE_VERSION}" > build-info.txt'

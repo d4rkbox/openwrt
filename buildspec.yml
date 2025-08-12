@@ -1,0 +1,39 @@
+version: 0.2
+phases:
+  install:
+    commands:
+      - 'echo "Installing dependencies"'
+      - 'apt-get update -y'
+      - 'apt-get install -y build-essential subversion git-core libncurses5-dev zlib1g-dev gawk flex quilt libssl-dev xsltproc libxml-parser-perl unzip python3 rsync file bc'
+  pre_build:
+    commands:
+      - 'echo "Cloning OpenWrt: ${OPENWRT_REF}"'
+      - 'git clone https://git.openwrt.org/openwrt/openwrt.git'
+      - 'cd openwrt'
+      - 'git checkout "${OPENWRT_REF}"'
+      - './scripts/feeds update -a'
+      - './scripts/feeds install -a'
+  build:
+    commands:
+      - 'set -euo pipefail'
+      - 'cd openwrt'
+      - 'echo "=== Generating .config for TARGET=${TARGET} SUBTARGET=${SUBTARGET} PROFILE=${PROFILE} ==="'
+      - 'rm -f .config'
+      - 'make defconfig'
+      - printf '%s\n' "CONFIG_DEVEL=y" "CONFIG_BPF_TOOLCHAIN_HOST=y" "CONFIG_TARGET_${TARGET}=y" "CONFIG_TARGET_${TARGET}_${SUBTARGET}=y" "CONFIG_TARGET_${TARGET}_${SUBTARGET}_DEVICE_${PROFILE}=y" > .config
+      - 'make defconfig'
+      - 'echo "=== Starting build ==="'
+      - 'make -j$(nproc) BUILD_LOG=1 V=s'
+      - 'echo "commit=${CODEBUILD_RESOLVED_SOURCE_VERSION}" > build-info.txt'
+      - 'echo "openwrt_ref=${OPENWRT_REF}" >> build-info.txt'
+      - 'echo "target=${TARGET}" >> build-info.txt'
+      - 'echo "subtarget=${SUBTARGET}" >> build-info.txt'
+      - 'echo "profile=${PROFILE}" >> build-info.txt'
+      - 'echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> build-info.txt'
+      - 'echo "Syncing to s3://${IMAGES_BUCKET}/openwrt/${OPENWRT_REF}/${TARGET}_${SUBTARGET}/${PROFILE}/${CODEBUILD_RESOLVED_SOURCE_VERSION}/"'
+      - 'aws s3 sync bin/ "s3://${IMAGES_BUCKET}/openwrt/${OPENWRT_REF}/${TARGET}_${SUBTARGET}/${PROFILE}/${CODEBUILD_RESOLVED_SOURCE_VERSION}/" --delete'
+artifacts:
+  files:
+    - 'openwrt/build-info.txt'
+    - 'openwrt/bin/**/*'
+  discard-paths: no

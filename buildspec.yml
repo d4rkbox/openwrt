@@ -14,8 +14,8 @@ phases:
       - 'git clone https://git.openwrt.org/openwrt/openwrt.git'
       - 'cd openwrt'
       - 'git checkout "${OPENWRT_REF}"'
-      - ./scripts/feeds update -a && ./scripts/feeds install -a
-      - echo "DL_DIR: $DL_DIR  CCACHE_DIR: $CCACHE_DIR"
+      - './scripts/feeds update -a && ./scripts/feeds install -a'
+      - 'echo "DL_DIR: $DL_DIR  CCACHE_DIR: $CCACHE_DIR"'
   build:
     commands:
       - echo "=== Generating .config for TARGET=${TARGET} SUBTARGET=${SUBTARGET} PROFILE=${PROFILE} ==="

@@ -3,28 +3,29 @@ phases:
   install:
     commands:
       - 'echo "Installing dependencies"'
-      - 'yum update -y'
-      - 'sudo yum groupinstall -y "Development Tools"'
-      - 'sudo yum install -y libtool pkgconfig autoconf automake openssl-devel'
-      - 'yum install -y --skip-broken bash-completion bzip2 file gcc gcc-c++ git-core make ncurses-devel patch rsync tar unzip wget which diffutils python3 python3-setuptools perl-base perl-Data-Dumper perl-File-Compare perl-File-Copy perl-FindBin perl-IPC-Cmd perl-JSON-PP perl-lib perl-Thread-Queue perl-Time-Piece'
+      - apt-get update -y
+      - DEBIAN_FRONTEND=noninteractive apt-get install -y \
+          build-essential git clang flex bison gawk g++ libncurses5-dev libncursesw5-dev \
+          zlib1g-dev python3 python3-distutils rsync unzip file wget libssl-dev libelf-dev ccache
+      - mkdir -p "$DL_DIR" "$CCACHE_DIR"
   pre_build:
     commands:
       - 'echo "Cloning OpenWrt: ${OPENWRT_REF}"'
       - 'git clone https://git.openwrt.org/openwrt/openwrt.git'
       - 'cd openwrt'
       - 'git checkout "${OPENWRT_REF}"'
-      - './scripts/feeds update -a'
-      - './scripts/feeds install -a'
+      - ./scripts/feeds update -a && ./scripts/feeds install -a
+      - echo "DL_DIR: $DL_DIR  CCACHE_DIR: $CCACHE_DIR"
   build:
     commands:
       - echo "=== Generating .config for TARGET=${TARGET} SUBTARGET=${SUBTARGET} PROFILE=${PROFILE} ==="
       - wget https://downloads.openwrt.org/releases/24.10.2/targets/${TARGET}/${SUBTARGET}/config.buildinfo -o .config
       - mv config.buildinfo .config
       - make defconfig
+      - ./scripts/feeds install -a
       - 'echo "=== Starting build ==="'
-      - 'make tools/{clean, compile}'
-      - 'make tools/libressl/compile'
-      - 'make -j1 V=sc download world'
+      - export CC="ccache gcc" CXX="ccache g++"
+      - make -j"$(nproc)"
       - 'echo "commit=${CODEBUILD_RESOLVED_SOURCE_VERSION}" > build-info.txt'
       - 'echo "openwrt_ref=${OPENWRT_REF}" >> build-info.txt'
       - 'echo "target=${TARGET}" >> build-info.txt'

@@ -21,7 +21,7 @@ phases:
       - ./scripts/feeds install -a
       - 'echo "=== Starting build ==="'
       - export CC="ccache gcc" CXX="ccache g++"
-      - make -j1 V=s or V=sc
+      - make download world -j1 V=sc
       - 'echo "commit=${CODEBUILD_RESOLVED_SOURCE_VERSION}" > build-info.txt'
       - 'echo "openwrt_ref=${OPENWRT_REF}" >> build-info.txt'
       - 'echo "target=${TARGET}" >> build-info.txt'
